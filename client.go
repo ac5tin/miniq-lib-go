@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"miniq/proto"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -25,4 +28,18 @@ func NewClient(address string) (*Client, error) {
 // closes the connection to the miniq server
 func (c *Client) Close() error {
 	return c.conn.Close()
+}
+
+// Add new task
+func (c *Client) AddTask(channel *string, data *[]byte) error {
+	client := proto.NewMiniQClient(c.conn)
+	// prepare request
+	req := new(proto.AddTaskRequest)
+	req.Channel = *channel
+	req.Data = *data
+	// send request
+	if _, err := client.AddTask(context.Background(), req); err != nil {
+		return err
+	}
+	return nil
 }
