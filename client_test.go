@@ -9,6 +9,7 @@ func TestClient(t *testing.T) {
 	}
 
 	t.Log("Successfully connected to server")
+
 	// add task
 	t.Run("AddTask", func(t *testing.T) {
 		data := []byte("test")
@@ -16,4 +17,14 @@ func TestClient(t *testing.T) {
 			t.Error(err)
 		}
 	})
+
+	//get task
+	{
+		ch, err := c.GetTasks("test", TaskStatusPending)
+		if err != nil {
+			t.Error(err)
+		}
+		task := <-ch
+		t.Logf("Received task with ID: %s and data: %s\n", task.ID, task.Data)
+	}
 }
