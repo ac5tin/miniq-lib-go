@@ -8,6 +8,12 @@ test:
 	@echo "- Running cleanup -"
 	docker stop $$(docker ps -a -q --filter ancestor=${SERVER_IMAGE} --format="{{.ID}}")
 
+
+
+test/local: 
+	@echo "- Running test cases -"
+	go test ./... -v -cover
+
 build:
 	go build -o bin/app
 
