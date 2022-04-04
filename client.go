@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"io"
+	"log"
 	"miniq/proto"
 
 	"google.golang.org/grpc"
@@ -31,15 +33,69 @@ func (c *Client) Close() error {
 }
 
 // Add new task
-func (c *Client) AddTask(channel *string, data *[]byte) error {
+func (c *Client) AddTask(channel string, data *[]byte) error {
 	client := proto.NewMiniQClient(c.conn)
 	// prepare request
 	req := new(proto.AddTaskRequest)
-	req.Channel = *channel
+	req.Channel = channel
 	req.Data = *data
 	// send request
 	if _, err := client.AddTask(context.Background(), req); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (c *Client) GetTasks(channel string, status TaskStatus) (<-chan *Task, error) {
+	client := proto.NewMiniQClient(c.conn)
+	// prepare request
+	req := new(proto.GetTaskRequest)
+	req.Status = proto.TaskStatus(status)
+	req.Channel = channel
+	stream, err := client.GetTasks(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *Task)
+	ctx := stream.Context()
+	go func() {
+		for {
+			t, err := stream.Recv()
+			// error handling
+			{
+				if err == io.EOF {
+					// EOF = end of stream
+					close(ch)
+					return
+				}
+				if err != nil {
+					log.Printf("[client] Failed to get tasks, Err: %v\n", err) // debug
+					close(ch)
+					return
+				}
+			}
+			// handle nil
+			{
+				if t == nil {
+					continue
+				}
+			}
+			// prepare task data
+			ch <- ProtoTask2Task(t)
+		}
+	}()
+
+	go func() {
+		<-ctx.Done()
+		if err := ctx.Err(); err != nil {
+			log.Printf("[client] %v\n", err.Error()) // debug
+		}
+		// close if not already closed
+		if _, ok := <-ch; ok {
+			close(ch)
+		}
+	}()
+
+	return ch, err
 }
