@@ -47,6 +47,21 @@ func (c *Client) AddTask(channel string, data *[]byte) error {
 	return nil
 }
 
+// update task
+func (c *Client) UpdateTaskStatus(channel, id string, status TaskStatus) error {
+	client := proto.NewMiniQClient(c.conn)
+	// prepare request
+	req := new(proto.UpdateTaskRequest)
+	req.Id = id
+	req.Channel = channel
+	req.Status = proto.TaskStatus(status)
+	// send request
+	if _, err := client.UpdateTask(context.Background(), req); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *Client) GetTasks(channel string, status TaskStatus) (<-chan *Task, error) {
 	client := proto.NewMiniQClient(c.conn)
 	// prepare request
