@@ -1,4 +1,4 @@
-module miniq
+module github.com/ac5tin/miniq-lib-go
 
 go 1.18
 

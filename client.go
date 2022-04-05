@@ -1,10 +1,11 @@
-package main
+package miniq
 
 import (
 	"context"
 	"io"
 	"log"
-	"miniq/proto"
+
+	"github.com/ac5tin/miniq-lib-go/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

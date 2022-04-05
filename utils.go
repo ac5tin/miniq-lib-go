@@ -1,7 +1,7 @@
-package main
+package miniq
 
 import (
-	"miniq/proto"
+	"github.com/ac5tin/miniq-lib-go/proto"
 )
 
 func ProtoTask2Task(t *proto.Task) *Task {
