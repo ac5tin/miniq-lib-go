@@ -1,6 +1,11 @@
 package miniq
 
-import "testing"
+import (
+	"math/rand"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestClient(t *testing.T) {
 	c, err := NewClient("localhost:8080")
@@ -11,8 +16,10 @@ func TestClient(t *testing.T) {
 	t.Log("Successfully connected to server")
 
 	// add task
+	data := make([]byte, 100000000) // create big data
 	t.Run("AddTask", func(t *testing.T) {
-		data := []byte("test")
+		// data := []byte("test")
+		rand.Read(data)
 		if err := c.AddTask("test", &data); err != nil {
 			t.Error(err)
 		}
@@ -25,6 +32,8 @@ func TestClient(t *testing.T) {
 			t.Error(err)
 		}
 		task := <-ch
-		t.Logf("Received task with ID: %s and data: %s\n", task.ID, task.Data)
+		t.Logf("Received task with ID: %s and data size:  %d\n", task.ID, len(task.Data))
+		assert.Equal(t, len(data), len(task.Data))
+		assert.Equal(t, data, task.Data)
 	}
 }
