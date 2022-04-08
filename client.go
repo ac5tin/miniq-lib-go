@@ -18,7 +18,7 @@ type Client struct {
 // creates a new miniq connection client
 func NewClient(address string) (*Client, error) {
 	opts := grpc.WithTransportCredentials(insecure.NewCredentials())
-	cc, err := grpc.Dial(address, opts, grpc.WithBlock())
+	cc, err := grpc.Dial(address, opts, grpc.WithBlock(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024*1024*1024)))
 	if err != nil {
 		return nil, nil
 	}
